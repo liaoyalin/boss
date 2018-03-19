@@ -36,6 +36,11 @@ public class Area {
 
     @OneToMany(mappedBy = "area")
     private Set<SubArea> subareas = new HashSet<SubArea>();
+    
+    //下拉框中显示数据需要name字段,而Area实体类并没有该字段,所以需要自己实现一个getName()方法
+    public String getName(){
+        return province + city + district;
+    }
 
     public Long getId() {
         return id;
