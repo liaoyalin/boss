@@ -11,6 +11,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -31,6 +32,8 @@ import org.springframework.stereotype.Controller;
 import com.itheima.bos.domain.base.Area;
 import com.itheima.bos.domain.base.Standard;
 import com.itheima.bos.service.base.AreaService;
+import com.itheima.bos.service.base.impl.AreaServiceImpl;
+import com.itheima.bos.web.action.CommonAction;
 import com.itheima.utils.PinYin4jUtils;
 import com.opensymphony.xwork2.ActionSupport;
 import com.opensymphony.xwork2.ModelDriven;
@@ -47,14 +50,13 @@ import net.sf.json.JsonConfig;
 @ParentPackage("struts-default")
 @Controller
 @Scope("prototype")
-public class AreaAction extends ActionSupport implements ModelDriven<Area>{
-    private Area model=new Area();
-
-    @Override
-    public Area getModel() {
-          
-        return model;
+public class AreaAction extends CommonAction<Area>{
+    public AreaAction() {
+        super(Area.class);  
+        
     }
+
+   
     @Autowired
     private AreaService areaService;
     //使用属性驱动获取用户上传的文件
@@ -105,14 +107,7 @@ public class AreaAction extends ActionSupport implements ModelDriven<Area>{
         
     }
     
-    private int page;//第几页
-    private int rows;//每页显示多少条数据
-    public void setPage(int page) {
-        this.page = page;
-    }
-    public void setRows(int rows) {
-        this.rows = rows;
-    }
+   
     //Ajax请求，不需要跳转页面
     @Action(value="areaAction_pageQuery")
     public String pageQuery() throws IOException{
@@ -120,30 +115,42 @@ public class AreaAction extends ActionSupport implements ModelDriven<Area>{
         // SPringDataJPA的页码是从0开始的
         // 所以要-1
       Pageable pageable= new PageRequest(page-1, rows);
-      Page<Area> page=  areaService.findAll(pageable);
-      long total = page.getTotalElements();  // 总数据条数
-      List<Area> list = page.getContent(); // 当前页要实现的内容
-      //封装数据
-      Map<String, Object> map=new HashMap<String, Object>();
-      map.put("total", total);
-      map.put("rows", list);
       
+      Page<Area> page=  areaService.findAll(pageable);
       JsonConfig jsonConfig=new JsonConfig();
       jsonConfig.setExcludes(new String[]{"subareas"});
-      
+      page2Json(page, jsonConfig);
      
-   // 把对象转化为json字符串
-      String json = JSONObject.fromObject(map,jsonConfig).toString();
-      //将json字符串写入到页面
-      HttpServletResponse response = ServletActionContext.getResponse();
-       response.setContentType("application/json;charset=UTF-8");
-      response.getWriter().write(json);
-
         
         return NONE;
     }
     
     
+    private String q;
+    public void setQ(String q) {
+        this.q = q;
+    }
+    
+   // 1.  动态加载区域数据
+    @Action(value="areaAction_findAll")
+    public String findAll() throws IOException{
+        List<Area> list;
+        //2. 增强下拉框搜索功能
+        if(StringUtils.isNoneEmpty(q)){
+            //不为空，就根据用户输入的条件查询，进行模糊匹配
+            list = areaService.findByQ(q);
+        }else{
+            //q为空，就查询所有
+            Page<Area> page=  areaService.findAll(null);
+            list = page.getContent();
+        }
+      
+        JsonConfig jsonConfig=new JsonConfig();
+        jsonConfig.setExcludes(new String[]{"subareas"});
+        list2json(list,jsonConfig);
+        return NONE;
+        
+    }
 
 }
   
