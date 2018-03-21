@@ -1,5 +1,9 @@
 package com.itheima.bos.service.base;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import com.itheima.bos.domain.base.Standard;
 import com.itheima.bos.domain.base.SubArea;
 
 /**  
@@ -10,6 +14,8 @@ import com.itheima.bos.domain.base.SubArea;
 public interface SubAreaService {
 
     void save(SubArea model);
+
+    Page<SubArea> findAll(Pageable pageable);
 
 }
   

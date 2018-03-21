@@ -29,17 +29,18 @@ public class CommonAction<T> extends ActionSupport implements ModelDriven<T>{
     private Class<T> clazz;
    public CommonAction(Class<T> clazz){
        this.clazz=clazz;
+       try {
+           model=clazz.newInstance();
+       } catch (Exception e) {
+             
+           e.printStackTrace();  
+       } 
    }
 
     @Override
     public T getModel() {
-          try {
-            model=clazz.newInstance();
-        } catch (Exception e) {
-              
-            e.printStackTrace();  
-        } 
-        return null;
+         
+        return model;
     }
     
     protected int page;//第几页

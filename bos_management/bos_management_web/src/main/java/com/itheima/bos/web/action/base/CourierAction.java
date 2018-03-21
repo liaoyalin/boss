@@ -30,6 +30,7 @@ import org.springframework.stereotype.Controller;
 import com.itheima.bos.domain.base.Courier;
 import com.itheima.bos.domain.base.Standard;
 import com.itheima.bos.service.base.CourierService;
+import com.itheima.bos.web.action.CommonAction;
 import com.opensymphony.xwork2.ActionSupport;
 import com.opensymphony.xwork2.ModelDriven;
 
@@ -45,31 +46,23 @@ import net.sf.json.JsonConfig;
 @ParentPackage("struts-default")
 @Controller
 @Scope("prototype")
-public class CourierAction extends ActionSupport implements ModelDriven<Courier>{
-    private Courier model=new Courier();
-
-    @Override
-    public Courier getModel() {
+public class CourierAction extends CommonAction<Courier>{
+    public CourierAction() {
           
-        return model;
+        super(Courier.class);  
+        
     }
+   
     @Autowired
     private CourierService courierService;
     @Action(value="courierAction_save",results={@Result(name="success",location="/pages/base/courier.html",type="redirect")})
     public String save(){
-        courierService.save(model);
+        courierService.save(getModel());
         
         return SUCCESS;
         
     }
-    private int page;
-    private int rows;
-    public void setPage(int page) {
-        this.page = page;
-    }
-    public void setRows(int rows) {
-        this.rows = rows;
-    }
+    
     @Action("courierAction_pageQuery")
     public String pageQuery() throws IOException{
         
@@ -80,13 +73,10 @@ public class CourierAction extends ActionSupport implements ModelDriven<Courier>
             //
             @Override
             public Predicate toPredicate(Root<Courier> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
-                String courierNum = model.getCourierNum();
-                String company = model.getCompany();
-                Standard standard = model.getStandard();
-                String type = model.getType();
-                
-                
-                
+                String courierNum = getModel().getCourierNum();
+                String company = getModel().getCompany();
+                Standard standard = getModel().getStandard();
+                String type = getModel().getType();
                 List<Predicate>list=new ArrayList<>();
                 if(StringUtils.isNotEmpty(courierNum)){
                     //如果工号不为空，就构建一个等值查询
@@ -129,11 +119,11 @@ public class CourierAction extends ActionSupport implements ModelDriven<Courier>
         
         Pageable pageable=new PageRequest(page-1, rows);
        Page<Courier> page= courierService.findAll(specification,pageable);
-       long total = page.getTotalElements();
+       /*long total = page.getTotalElements();
        List<Courier> list = page.getContent();
       Map<String, Object> map=new HashMap<String, Object>(); 
       map.put("total", total);
-      map.put("rows", list);
+      map.put("rows", list);*/
       
       JsonConfig jsonConfig=new JsonConfig();
       jsonConfig.setExcludes(new String[]{"fixedAreas","takeTime"});
@@ -144,12 +134,8 @@ public class CourierAction extends ActionSupport implements ModelDriven<Courier>
          // b.注解中增加fetch=FetchType.EAGER 属性,将该字段的值加载出来
         //  c.使用JsonConfig灵活控制忽略字段(实际开发中用)
 
-      String json = JSONObject.fromObject(map,jsonConfig).toString();
-      HttpServletResponse response = ServletActionContext.getResponse();
-      response.setContentType("application/json; charset=utf-8");
-      response.getWriter().write(json);
-        
-        
+      
+        page2Json(page, jsonConfig);
         return NONE;
         
     }
@@ -164,6 +150,24 @@ public class CourierAction extends ActionSupport implements ModelDriven<Courier>
         return SUCCESS;
         
     }
-
+    //查询所有在职的快递员
+    @Action(value="courierAction_listajax")
+    public String listajax() throws IOException{
+        Specification<Courier> specification=new Specification<Courier>() {
+            
+            @Override
+            public Predicate toPredicate(Root<Courier> root, CriteriaQuery<?> query, CriteriaBuilder cb) {
+                //判断deltag字段是否为空，如果为空则表示在职，为1则表示不在职
+                Predicate predicate = cb.isNull(root.get("deltag").as(Character.class));
+                return predicate;
+            }
+        };
+        Page<Courier> p = courierService.findAll(specification, null);
+        List<Courier> list = p.getContent();
+        JsonConfig jsonConfig=new JsonConfig();
+        jsonConfig.setExcludes(new String[]{"fixedAreas","takeTime"});
+        list2json(list, jsonConfig);
+        return NONE;
+}
 }
   
