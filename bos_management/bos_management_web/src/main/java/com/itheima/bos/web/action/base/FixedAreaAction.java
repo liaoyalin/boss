@@ -111,6 +111,7 @@ public class FixedAreaAction extends ActionSupport implements ModelDriven<FixedA
   //向crm系统发起请求，查询已关联定区的客户
     @Action(value="fixedAreaAction_findAssociatedCustomers")
     public String findAssociatedCustomers() throws IOException{
+        System.out.println("~~~~~~~~~~~~~~~"+getModel().getId());
       List<Customer> list= (List<Customer>) WebClient.create("http://localhost:8180/crm/webService/customerService/findCustomersAssocaited")
               .query("fixedAreaId", getModel().getId())
               .type(MediaType.APPLICATION_JSON)
@@ -162,6 +163,21 @@ public class FixedAreaAction extends ActionSupport implements ModelDriven<FixedA
         return SUCCESS;
         
     }
+    
+    //获取分区的id
+    private Long[] subAreaIds;
+    public void setSubAreaIds(Long[] subAreaIds) {
+        this.subAreaIds = subAreaIds;
+    }
+    //关联分区
+    @Action(value="fixedAreaAction_assignSubAreas2FixedArea",results={@Result(name="success",location="/pages/base/fixed_area.html",type="redirect")})
+    public String assignSubAreas2FixedArea(){
+        fixedAreaService.assignSubAreas2FixedArea(getModel().getId(),subAreaIds);
+        
+        return SUCCESS;
+        
+    }
+    
 
 }
   

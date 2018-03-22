@@ -55,5 +55,18 @@ public class CourierServiceImpl implements CourierService {
         return courierRepository.findAll(specification, pageable);
     }
 
+    @Override
+    public void restore(String ids) {
+          
+        if( StringUtils.isNoneEmpty(ids)){
+            String[] split = ids.split(",");
+            for (String id : split) {
+                
+                courierRepository.updateRestoreById(Long.parseLong(id));
+            }
+        }  
+        
+    }
+
 }
   

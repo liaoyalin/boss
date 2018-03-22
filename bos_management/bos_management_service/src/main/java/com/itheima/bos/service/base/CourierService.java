@@ -21,6 +21,8 @@ public interface CourierService {
 
     Page<Courier> findAll(Specification<Courier> specification, Pageable pageable);
 
+    void restore(String ids);
+
 
 }
   
