@@ -59,7 +59,7 @@ public class SubAreaAction extends CommonAction<SubArea>{
         // SPringDataJPA的页码是从0开始的
         // 所以要-1
         JsonConfig jsonConfig=new JsonConfig();
-        jsonConfig.setExcludes(new String[]{"subareas"});
+        jsonConfig.setExcludes(new String[]{"subareas","couriers"});
       Pageable pageable= new PageRequest(page-1, rows);
       Page<SubArea> page=  subAreaService.findAll(pageable);
       page2Json(page, jsonConfig);

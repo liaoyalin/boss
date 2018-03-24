@@ -76,7 +76,8 @@ public class StandardAction extends CommonAction<Standard> {
         HttpServletResponse response = ServletActionContext.getResponse();
         response.setContentType("application/json;charset=UTF-8");
        response.getWriter().write(json);
-        
+       Thread thread = new Thread();
+       thread.run();
         return NONE;
         
     }
