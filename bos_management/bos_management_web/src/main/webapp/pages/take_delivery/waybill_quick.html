@@ -151,6 +151,12 @@
 					columns : columns,
 					onDblClickRow : doDblClickRow,
 					onAfterEdit : function(rowIndex, rowData, changes){
+						//请求后台保存订单的数据
+						$.post("../../waybillAction_save.action",rowData,function(date){
+							if(date=="1"){
+								$.messager.alert("提示", "数据录入失败，请检查数据", "warning")
+							}
+						})
 						console.info(rowData);
 						editIndex = undefined;
 					}

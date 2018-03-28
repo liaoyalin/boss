@@ -156,7 +156,8 @@ public class FixedAreaAction extends ActionSupport implements ModelDriven<FixedA
         this.takeTimeId = takeTimeId;
     }
     //关联快递员
-    @Action(value=" fixedAreaAction_associationCourierToFixedArea",results={@Result(name="success",location="/pages/base/fixed_area.html",type="redirect")})
+    
+    @Action(value="fixedAreaAction_associationCourierToFixedArea",results={@Result(name="success",location="/pages/base/fixed_area.html",type="redirect")})
     public String associationCourierToFixedArea(){
        
         fixedAreaService.associationCourierToFixedArea(getModel().getId(),courierId,takeTimeId);

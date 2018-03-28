@@ -17,6 +17,7 @@
 		指定连接池配置
 		#########################################################
 	-->
+
 	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
 		<property name="driverClass" value="oracle.jdbc.driver.OracleDriver" />
 		<property name="jdbcUrl" value="jdbc:oracle:thin:@192.168.6.100:1521:ORCL" />
@@ -87,6 +88,34 @@
 			<bean class="org.apache.cxf.interceptor.LoggingOutInterceptor"></bean>
 		</jaxrs:outInterceptors>
 	</jaxrs:server>
+	<!-- 初始化 shiro框架提供的过滤器-->
+	<bean id="shiroFilterFactoryBean" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
 	
-
+	<!-- 注入安全管理器 -->
+		<property name="securityManager" ref="securityManager"></property>
+		<!-- 登录页面的url,认证的页面 -->
+		<property name="loginUrl" value="/login.html"></property>
+		<!-- 认证成功以后跳转的页面 -->
+		<property name="successUrl" value="/index.html"></property>
+		<!-- 权限不足的时候,跳转的页面 -->
+		<property name="unauthorizedUrl" value="/unauthorized.html"></property>
+	<!-- 指定拦截规则 -->
+		<property name="filterChainDefinitions">
+		<value>
+		        /css/* = anon
+				/data/* = anon
+				/images/* = anon
+				/js/** = anon
+				/validatecode.jsp* = anon
+				/userAction_login.action=anon
+		        /** = authc
+		</value>
+		</property>
+	</bean>
+	
+	<!-- 注册安全管理器 -->
+	<bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+	<property name="realm" ref="userRealm"></property>
+	</bean>
+	
 </beans>
