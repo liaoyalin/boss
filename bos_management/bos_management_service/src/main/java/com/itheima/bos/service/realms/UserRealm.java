@@ -6,6 +6,7 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +25,16 @@ public class UserRealm extends AuthorizingRealm{
     @Autowired
     private UserRepostory userRepostory;
 
-    //授权
+    //授权的方法
+    //每一次访问需要权限的资源时，都会调用授权的方法，太浪费资源(可以使用缓存技术改善)
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection token) {
-          
-        return null;
+        SimpleAuthorizationInfo info=new SimpleAuthorizationInfo();
+        info.addStringPermission("courierAction_pageQuery");
+        return info;
     }
 
-    //认证
+    //认证的方法
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token)
             throws AuthenticationException {

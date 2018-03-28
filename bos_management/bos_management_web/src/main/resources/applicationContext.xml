@@ -68,7 +68,29 @@
 	<context:component-scan base-package="com.itheima.bos.service" />
 
 	<!-- 开启事务注解 -->
-	<tx:annotation-driven transaction-manager="transactionManager" />
+	<!--proxy-target-class="false",使用的jdk代理 (默认) -->
+	<!--proxy-target-class="true",使用的cglib代理  -->
+	<tx:annotation-driven proxy-target-class="true" transaction-manager="transactionManager" />
+	<!--基于spring的自动代理，创建service层的实现  -->
+	<bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator">
+	<!--开启cglib代理  -->
+	<property name="proxyTargetClass" value="true"></property>
+	</bean>
+	<!--
+		配置切面 = 切点 + 通知
+		切点 : 向那里插入代码
+		通知 : 要插入的代码
+	-->
+	
+	<bean
+		class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+		
+		<!--注入安全管理器  -->
+		<property name="securityManager" ref="securityManager"></property>
+	</bean>
+	
+	
+	
 	<!--
 		#########################################################
 		指定Spring Data JPA要进行扫描的包,该包中的类框架会自动为其创建代理
@@ -97,17 +119,24 @@
 		<property name="loginUrl" value="/login.html"></property>
 		<!-- 认证成功以后跳转的页面 -->
 		<property name="successUrl" value="/index.html"></property>
-		<!-- 权限不足的时候,跳转的页面 -->
+		<!-- 权限不足的时候,跳转的页面 --><!-- 注意：该页面不对注解方式生效 -->
 		<property name="unauthorizedUrl" value="/unauthorized.html"></property>
 	<!-- 指定拦截规则 -->
 		<property name="filterChainDefinitions">
 		<value>
+		      <!--   authc : 框架提供的一个拦截器,必须认证通过,认证通过就可以访问,认证失败,无法访问
+				     anon : 框架提供的一个拦截器,可以匿名访问 
+				     perms:框架提供的一个拦截器,用户请求资源的时候，会去检查影虎是否拥有对应的权限，如果有就放行，没有，就跳到unauthorizedUrl属性指定的页面
+				     拦截的规则是从上往下的，一旦有一个规则匹配成功，后面的规则就不再执行
+				     -->
+		
 		        /css/* = anon
 				/data/* = anon
 				/images/* = anon
 				/js/** = anon
 				/validatecode.jsp* = anon
-				/userAction_login.action=anon
+				/courierAction_pageQuery.action=perms["courierAction_pageQuery"]
+				 /userAction_login.action=anon 
 		        /** = authc
 		</value>
 		</property>

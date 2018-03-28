@@ -2,6 +2,9 @@ package com.itheima.bos.web.action.system;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
 import org.apache.struts2.ServletActionContext;
@@ -45,11 +48,37 @@ public class UserAction  extends CommonAction<User>{
             //登录
             Subject subject = SecurityUtils.getSubject();
             UsernamePasswordToken token=new UsernamePasswordToken(getModel().getUsername(),getModel().getPassword());
-            subject.login(token);
+            try {
+                subject.login(token);
+                //保存用户
+                //此方法的返回值是由realm中的 doGetAuthenticationInfo方法的里面的SimpleAuthenticationInfo的第一个参数决定的
+               User user= (User) subject.getPrincipal();
+               ServletActionContext.getRequest().getSession().setAttribute("user", user);
+                return SUCCESS;
+            } catch (UnknownAccountException e) {
+                  
+                e.printStackTrace();  
+                //用户名写错了
+                System.out.println("用户名写错了");
+                
+            } catch (IncorrectCredentialsException e) {
+                
+              e.printStackTrace();  
+              //密码写错了
+              System.out.println("密码写错了");
+              
+          }catch (Exception e) {
+              
+            e.printStackTrace();  
+            //密码写错了
+            System.out.println("其他服务器错误");
+            
+        }
             
         }
         return LOGIN;
-       
+       // UnknownAccountException
+        //IncorrectCredentialsException
         
     }
 
