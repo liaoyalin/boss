@@ -77,8 +77,18 @@ public class UserAction  extends CommonAction<User>{
             
         }
         return LOGIN;
-       // UnknownAccountException
-        //IncorrectCredentialsException
+       
+    }
+    
+    @Action(value="userAction_logout",
+            results={
+            @Result(name="success",location="/login.html",
+                    type="redirect")})
+    public String logout(){
+        Subject subject = SecurityUtils.getSubject();
+        subject.logout();
+        
+        return SUCCESS;
         
     }
 
