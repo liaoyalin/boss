@@ -1,6 +1,7 @@
 package com.itheima.bos.web.action.system;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Namespace;
@@ -58,6 +59,16 @@ public class PermissionAction  extends CommonAction<Permission>{
         
         return SUCCESS;
         
+    }
+    //动态获取权限
+    @Action(value="permissionAction_findAll")
+    public String findAll() throws IOException{
+        Page<Permission> page = permissionService.findAll(null);
+        List<Permission> list = page.getContent();
+        JsonConfig jsonConfig=new JsonConfig();
+        jsonConfig.setExcludes(new String[]{"roles"});
+        list2json(list, jsonConfig);
+        return NONE;
     }
 }
   
