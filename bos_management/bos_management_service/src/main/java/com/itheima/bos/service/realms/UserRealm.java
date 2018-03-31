@@ -1,5 +1,8 @@
 package com.itheima.bos.service.realms;
 
+import java.util.List;
+
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -9,10 +12,15 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.itheima.bos.dao.system.PermissionRepostory;
+import com.itheima.bos.dao.system.RoleRepostory;
 import com.itheima.bos.dao.system.UserRepostory;
+import com.itheima.bos.domain.system.Permission;
+import com.itheima.bos.domain.system.Role;
 import com.itheima.bos.domain.system.User;
 
 /**  
@@ -24,13 +32,44 @@ import com.itheima.bos.domain.system.User;
 public class UserRealm extends AuthorizingRealm{
     @Autowired
     private UserRepostory userRepostory;
+    @Autowired
+    private RoleRepostory roleRepostory;
+    @Autowired
+    private PermissionRepostory permissionRepostory;
 
     //授权的方法
     //每一次访问需要权限的资源时，都会调用授权的方法，太浪费资源(可以使用缓存技术改善)
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection token) {
         SimpleAuthorizationInfo info=new SimpleAuthorizationInfo();
-        info.addStringPermission("courierAction_pageQuery");
+        // 需要根据当前的用户去查询对应的权限和角色
+        Subject subject = SecurityUtils.getSubject();
+        User user= (User) subject.getPrincipal();
+        if("admin".equals(user.getUsername())){
+            // 内置管理员的权限和角色是写死的
+            List<Role> roles = roleRepostory.findAll();
+            for (Role role : roles) {
+                info.addRole(role.getKeyword());
+            }
+            
+            List<Permission> permissions = permissionRepostory.findAll();
+            for (Permission permission : permissions) {
+                info.addStringPermission(permission.getKeyword());
+            }
+        }else {
+            List<Role> roles = roleRepostory.findbyUid(user.getId());
+            for (Role role : roles) {
+                info.addRole(role.getKeyword());
+            }
+            
+            List<Permission> permissions = permissionRepostory.findbyUid(user.getId());
+            for (Permission permission : permissions) {
+                info.addStringPermission(permission.getKeyword());
+            }
+        }
+        // 角色其实是权限的集合,并不是所有的权限都会包含在某一个角色中
+        
+
         return info;
     }
 

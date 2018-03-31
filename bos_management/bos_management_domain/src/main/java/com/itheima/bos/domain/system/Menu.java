@@ -1,5 +1,6 @@
 package com.itheima.bos.domain.system;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,7 +20,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "T_MENU")
-public class Menu {
+public class Menu implements Serializable{
     @Id
     @GeneratedValue
     @Column(name = "C_ID")
@@ -43,6 +44,15 @@ public class Menu {
     @JoinColumn(name = "C_PID")
     private Menu parentMenu;
     
+    /*返回的数据最终是由ztree加载的,这种数据格式是标准json,导致树上的数据是重复的.
+    所以需要返回简单json的数据,简单的json需要pId属性,在Menu实体中增加方法*/
+    public Long getpId(){
+        if(parentMenu == null){
+            //如果是一级菜单
+            return 0L;
+        }
+        return parentMenu.getId();
+    }
     public String getText(){
         return name;
     }
